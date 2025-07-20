@@ -43,11 +43,7 @@ This is the raw dataset containing rows of Java code snippets and their associat
 If you use this repository or its datasets in your research, please cite:
 
 ```bibtex
-@inproceedings{YourLastName2024LLMJavaSVRBenchmark,
-  title={Assessing the Effectiveness and Reliability of Large Language Models for Java Vulnerability Repair: A Comparative Case Study},
-  author={Your Name and Co-author Names},
-  year={2024},
-  url={https://github.com/oananbeh/LLM-Java-SVR-Benchmark}
+
 }
 ```
 
