@@ -44,6 +44,6 @@ If you use this repository or its datasets in your research, please cite:
 
 ```bibtex
 
-}
+
 ```
 
