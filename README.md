@@ -1,4 +1,7 @@
 # LLM-Java-SVR-Benchmark
+[![Dataset](https://img.shields.io/badge/Dataset-2,362%20samples-blue)](https://github.com/oananbeh/LLM-Java-SVR-Benchmark/tree/main)
+[![CWE Coverage](https://img.shields.io/badge/CWE%20Types-32-green)]()
+[![Paper](https://img.shields.io/badge/Paper-Available-red)](https://github.com/oananbeh/LLM-Java-SVR-Benchmark/tree/main)
 
 This repository accompanies the paper:  
 **"Assessing the Effectiveness and Reliability of Large Language Models for Java Vulnerability Repair: A Comparative Case Study"**
