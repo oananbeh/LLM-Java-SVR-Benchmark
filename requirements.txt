@@ -1,0 +1,43 @@
+# ============================================================
+# LLM-Java-SVR-Benchmark — Python Dependencies
+# Tested with Python 3.10+
+# Install: pip install -r requirements.txt
+# ============================================================
+
+# ---- Core data & numerics ----
+pandas>=2.0.0
+numpy>=1.24.0
+
+# ---- LLM clients ----
+openai>=1.30.0                   # ChatGPT-4 (gpt-4, gpt-4o)
+anthropic>=0.25.0                # Claude 3.5 Sonnet
+google-generativeai>=0.7.0       # Gemini 2.0 Flash
+requests>=2.31.0                 # Ollama (local Llama 3.2 via REST)
+
+# ---- RAG / Embeddings (CodeBERT) ----
+transformers>=4.40.0             # CodeBERT tokenizer + model
+torch>=2.0.0                     # PyTorch backend
+sentencepiece>=0.2.0             # tokenizer dependency
+accelerate>=0.29.0               # device mapping for large models
+
+# ---- RAP-Gen retrieval ----
+rank_bm25>=0.2.2                 # BM25 index for RAP-Gen
+
+# ---- RepairLLaMA adapter loading ----
+peft>=0.10.0                     # LoRA adapter (PEFT)
+bitsandbytes>=0.43.0             # 4-bit quantisation (CPU fallback)
+
+# ---- Experiment utilities ----
+tqdm>=4.66.0                     # progress bars
+python-dotenv>=1.0.0             # .env file loading
+jsonlines>=4.0.0                 # streaming JSON results
+
+# ---- Analysis & reporting ----
+scipy>=1.11.0                    # statistical tests (Wilcoxon, Mann-Whitney)
+matplotlib>=3.8.0                # plots
+seaborn>=0.13.0                  # heatmaps
+tabulate>=0.9.0                  # pretty-print tables
+
+# ---- Optional: Jupyter notebooks ----
+# jupyter>=1.0.0
+# ipykernel>=6.29.0

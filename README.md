@@ -3,49 +3,75 @@
 [![CWE Coverage](https://img.shields.io/badge/CWE%20Types-32-green)]()
 [![Paper](https://img.shields.io/badge/Paper-Available-red)](https://github.com/oananbeh/LLM-Java-SVR-Benchmark/tree/main)
 
-This repository accompanies the paper:  
-**"Assessing the Effectiveness and Reliability of Large Language Models for Java Vulnerability Repair: A Comparative Case Study"**
+This repository accompanies the paper:
 
-## Overview
+> **"Assessing the Effectiveness of Large Language Models for Java Vulnerability Repair: A Comparative Study"**
 
-Automated Software Vulnerability Repair (SVR) is becoming essential as software systems grow in complexity and face increasing security threats. Large Language Models (LLMs) such as ChatGPT-4, Claude 3.5 Sonnet, Gemini 2.0 Flash, and Llama 3.2 have shown impressive capabilities in code-related tasks, but their effectiveness in repairing Java vulnerabilities has not been comprehensively benchmarked.  
-This repository provides the datasets and resources used in our extensive comparative evaluation of these LLMs for Java vulnerability repair.
+It contains the benchmark dataset, full experiment implementation, and baseline integrations for the comparative evaluation of ChatGPT-4, Claude 3.5 Sonnet, Gemini 2.0 Flash, and Llama 3.2 on automated Java vulnerability repair.
 
 ---
 
-## Benchmark Datasets
+## Repository Structure
 
-### 1. LLM-Java-SVR Benchmark
+```
+LLM-Java-SVR-Benchmark/
+│
+├── SVR-Benchmark.csv             ← 2,362 validated Java vulnerabilities (benchmark dataset)
+│
+├── src/
+│   ├── inference/
+│   │   └── llm_client.py         ← Unified LLM client (OpenAI, Anthropic, Google, Ollama)
+│   ├── prompts/
+│   │   └── prompt_builder.py     ← One-shot, CoT, and RAG prompt builders + output parser
+│   ├── rag/
+│   │   └── retrieval.py          ← CodeBERT cosine similarity retrieval for RAG
+│   └── evaluation/
+│       ├── metrics.py            ← Precision, Recall, F1, Fix Rate computation
+│       └── validator.py          ← CodeQL + Snyk automated fix validation
+│
+├── baselines/
+│   ├── repairllama/
+│   │   └── run_repairllama.py    ← RepairLLaMA integration (Silva et al., 2023)
+│   └── rapgen/
+│       └── run_rapgen.py         ← RAP-Gen integration (Wang et al., 2023)
+│
+├── scripts/
+│   ├── run_experiment.py         ← Main orchestration: runs all LLMs + baselines
+│   └── compute_metrics.py        ← Generates all results tables from raw outputs
+│
+├── results/
+│   ├── raw/                      ← Per-(model, strategy) JSON result files
+│   └── metrics/                  ← Final CSV tables (overall, per-CWE, per-project)
+│
+├── data/
+│   └── cvefixes_corpus.csv       ← 500-entry CVEfixes Java corpus for RAG retrieval
+│
+├── requirements.txt
+└── .env.example                  ← API key and path configuration template
+```
 
-**Purpose:**  
-This is the raw dataset containing rows of Java code snippets and their associated vulnerabilities. It is designed for benchmarking and evaluating automated software vulnerability repair approaches.
+---
 
-**Dataset Columns:**  
-- **CWE ID:**  
-  The Common Weakness Enumeration identifier for the vulnerability (e.g., CWE-89 for SQL Injection).
-- **Project Name:**  
-  The open-source project from which the vulnerable code was collected.
-- **Vulnerable File:**  
-  The file name and path in the project containing the vulnerability.
-- **Programming Language:**  
-  The programming language of the code (Java in this dataset).
-- **Line Number:**  
-  The line number(s) in the file where the vulnerability occurs.
-- **Code Snippet:**  
-  The code fragment containing the vulnerability, providing context for repair.
-- **Exact Vulnerable Line:**  
-  The specific line of code that contains the vulnerability.
-- **Description:**  
-  A description of the vulnerability and its security implications.
+## Benchmark Dataset
 
-**Details:**  
-- The dataset includes 2,362 validated Java vulnerabilities from 20 real-world projects, categorized across 32 distinct CWE types.
-- Each entry is validated using automated tools (CodeQL and Snyk) and by security experts, ensuring high-confidence data.
-- Enables reproducible research and fair, rigorous comparison of automated repair methods.
+**File:** `SVR-Benchmark.csv` — 2,362 validated Java vulnerabilities from 20 open-source projects, covering 32 distinct CWE types.
 
-### 2. Open Source Projects Used in Evaluation
+| Column | Description |
+|--------|-------------|
+| `CWE ID` | Common Weakness Enumeration identifier (e.g. CWE-89) |
+| `Project Name` | Open-source Java project name |
+| `Vulnerable File` | File path within the project |
+| `Programming Language` | Java |
+| `Line Number` | Line(s) where the vulnerability occurs |
+| `Code Snippet` | Code fragment containing the vulnerability |
+| `Exact Vulnerable Line` | The specific vulnerable line |
+| `Description` | Description of the vulnerability and its security implications |
 
-The following table summarizes the evaluated Java projects, along with their CVE identifiers, descriptions, and affected versions.
+Each entry was confirmed by both CodeQL and Snyk; ambiguous cases were resolved by two domain experts following official CWE definitions.
+
+---
+
+## Evaluated Projects
 
 | Project | CVE-ID | CWE | Description | Versions |
 |---------|--------|-----|-------------|----------|
@@ -72,12 +98,127 @@ The following table summarizes the evaluated Java projects, along with their CVE
 
 ---
 
+## Setup
+
+### 1. Install Python dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Configure API keys
+
+```bash
+cp .env.example .env
+# Edit .env with your API keys and tool paths
+```
+
+### 3. Set up Llama 3.2 locally (Ollama)
+
+```bash
+# Install Ollama: https://ollama.com
+ollama serve
+ollama pull llama3.2
+```
+
+### 4. Prepare the CVEfixes RAG corpus
+
+```bash
+# Download CVEfixes DB from: https://zenodo.org/record/7029359
+# Set CVEFIXES_DB=/path/to/CVEfixes.db in .env, then:
+python -c "from src.rag.retrieval import prepare_cvefixes_corpus; prepare_cvefixes_corpus()"
+```
+
+### 5. Set up baselines (optional)
+
+```bash
+# RepairLLaMA — https://github.com/assert-kth/repairllama
+git clone https://github.com/assert-kth/repairllama
+# Set REPAIRLLAMA_ROOT in .env
+
+# RAP-Gen — https://github.com/zimin9/RAP-Gen
+git clone https://github.com/zimin9/RAP-Gen
+# Set RAPGEN_ROOT in .env
+```
+
+---
+
+## Running Experiments
+
+```bash
+# Full run — all LLMs × all strategies × 5 repetitions
+python scripts/run_experiment.py
+
+# Quick test — GPT-4, one-shot only, first 50 vulnerabilities
+python scripts/run_experiment.py --models gpt-4 --strategies one_shot --n_runs 1 --limit 50
+
+# Baselines only (RepairLLaMA + RAP-Gen)
+python scripts/run_experiment.py --baselines_only
+
+# Resume an interrupted run
+python scripts/run_experiment.py --resume
+```
+
+Then generate all results tables:
+
+```bash
+python scripts/compute_metrics.py
+```
+
+Output files in `results/metrics/`: `overall_comparison.csv`, `prompting_strategies.csv`, `per_cwe_analysis.csv`, `per_project_analysis.csv`, `baseline_comparison.csv`, `variance_analysis.csv`.
+
+---
+
+## Evaluation Metrics
+
+A fix is labelled **correct** only when both CodeQL and Snyk confirm the original CWE is no longer flagged **and** the project test suite still passes.
+
+| Metric | Definition |
+|--------|-----------|
+| **Precision** | TP / (TP + FP) |
+| **Recall** | TP / (TP + FN) |
+| **F1-score** | Harmonic mean of precision and recall |
+| **Fix Rate** | TP / total vulnerabilities in benchmark |
+
+---
+
+## Prompting Strategies
+
+| Strategy | Description |
+|----------|-------------|
+| **One-Shot** | Minimal prompt; measures raw pretrained knowledge |
+| **CoT** | Chain-of-Thought: model first analyses root cause, then generates fix |
+| **RAG** | Top-1 CVEfixes exemplar retrieved via CodeBERT cosine similarity |
+
+---
+
+## Baselines
+
+| Baseline | Architecture | Reference |
+|----------|-------------|-----------|
+| **RepairLLaMA** | Code Llama 7B + LoRA adapters | Silva et al. (2023) — [GitHub](https://github.com/assert-kth/repairllama) |
+| **RAP-Gen** | CodeT5 + BM25 retrieval | Wang et al. (2023) — [GitHub](https://github.com/zimin9/RAP-Gen) |
+
+---
+
 ## Citation
 
 If you use this repository or its datasets in your research, please cite:
 
 ```bibtex
-
-
+@article{anananbeh2025llmsvr,
+  title   = {Assessing the Effectiveness of Large Language Models for Java
+             Vulnerability Repair: A Comparative Study},
+  author  = {Anananbeh, Obie and {others}},
+  journal = {},
+  year    = {2025},
+  url     = {https://github.com/oananbeh/LLM-Java-SVR-Benchmark}
+}
 ```
+
+---
+
+## License
+
+The benchmark dataset is released under **CC BY 4.0**. The implementation code is released under the **MIT License**.
 

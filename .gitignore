@@ -1,0 +1,39 @@
+# Environment & secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# RAG cache (large binary files)
+src/rag/embeddings_cache.npy
+src/rag/corpus_meta.json
+
+# Raw experiment outputs (can be large)
+results/raw/*.json
+results/metrics/
+
+# CodeQL databases (very large)
+**/.codeql_db/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
