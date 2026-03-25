@@ -209,9 +209,9 @@ If you use this repository or its datasets in your research, please cite:
 @article{anananbeh2025llmsvr,
   title   = {Assessing the Effectiveness of Large Language Models for Java
              Vulnerability Repair: A Comparative Study},
-  author  = {Anananbeh, Obie and {others}},
+  author  = {Anananbeh, Obieda, Wala Alnozami and Dae-Kyoo Kim},
   journal = {},
-  year    = {2025},
+  year    = {2026},
   url     = {https://github.com/oananbeh/LLM-Java-SVR-Benchmark}
 }
 ```
