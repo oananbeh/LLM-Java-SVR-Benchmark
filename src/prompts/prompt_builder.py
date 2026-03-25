@@ -24,64 +24,74 @@ class VulnerabilityRecord:
 
 class PromptBuilder:
     """
-    Builds the three prompt variants described in the paper.
+    Builds the three prompt variants described in the paper (Section 3.3).
+
+    All templates are reproduced verbatim from the paper's prompt boxes.
+    Placeholders map as follows:
+      {CWE-ID: CWE Name}  → "{record.cwe_id}: {record.description}"
+                            (the dataset Description column is the vulnerability
+                            description that contextualises the CWE type, matching
+                            what Section 3.5 calls "a brief vulnerability description")
+      {Vulnerable Code}   → record.code_snippet
     """
 
     # ------------------------------------------------------------------
     # One-Shot Baseline (Section 3.3 of paper)
+    # Paper template (verbatim):
+    #   "The following Java code contains a vulnerability of type
+    #    {CWE-ID: CWE Name}. Please fix the vulnerability while
+    #    preserving the intended functionality of the code.
+    #    Return only the fixed code.
+    #    {Vulnerable Code}"
     # ------------------------------------------------------------------
 
     @staticmethod
     def one_shot(record: VulnerabilityRecord) -> str:
-        """
-        Minimal prompt: identify + fix, return only corrected code.
-        Deliberately avoids examples so we measure raw pretrained knowledge.
-        """
+        cwe_label = f"{record.cwe_id}: {record.description}"
         return (
-            f"You are a security expert specializing in Java vulnerability repair.\n\n"
-            f"The following Java code contains a {record.cwe_id} vulnerability "
-            f"in the project '{record.project_name}'.\n\n"
-            f"Vulnerability Description:\n{record.description}\n\n"
-            f"Vulnerable File: {record.vulnerable_file}\n\n"
-            f"Code Snippet:\n```java\n{record.code_snippet}\n```\n\n"
-            f"Exact Vulnerable Line:\n```java\n{record.exact_vulnerable_line}\n```\n\n"
-            f"Task: Fix the {record.cwe_id} vulnerability in the code above. "
-            f"Preserve the original functionality and return ONLY the corrected "
-            f"code snippet without any explanation, comments, or markdown formatting."
+            f"The following Java code contains a vulnerability of type "
+            f"{cwe_label}. "
+            f"Please fix the vulnerability while preserving the intended "
+            f"functionality of the code. Return only the fixed code.\n\n"
+            f"{record.code_snippet}"
         )
 
     # ------------------------------------------------------------------
     # Chain-of-Thought (CoT) (Section 3.3 of paper)
+    # Paper template (verbatim):
+    #   "The following Java code contains a vulnerability of type
+    #    {CWE-ID: CWE Name}. First, explain the root cause of this
+    #    vulnerability and describe the repair strategy. Then, provide
+    #    the fixed code that addresses the vulnerability while preserving
+    #    the intended functionality. Return the analysis followed by the
+    #    fixed code.
+    #    {Vulnerable Code}"
     # ------------------------------------------------------------------
 
     @staticmethod
     def chain_of_thought(record: VulnerabilityRecord) -> str:
-        """
-        Augments the one-shot prompt with an explicit reasoning instruction.
-        Directs the model to analyse root cause before generating the fix.
-        """
+        cwe_label = f"{record.cwe_id}: {record.description}"
         return (
-            f"You are a security expert specialising in Java vulnerability repair.\n\n"
-            f"The following Java code contains a {record.cwe_id} vulnerability "
-            f"in the project '{record.project_name}'.\n\n"
-            f"Vulnerability Description:\n{record.description}\n\n"
-            f"Vulnerable File: {record.vulnerable_file}\n\n"
-            f"Code Snippet:\n```java\n{record.code_snippet}\n```\n\n"
-            f"Exact Vulnerable Line:\n```java\n{record.exact_vulnerable_line}\n```\n\n"
-            f"Instructions:\n"
-            f"Step 1 — Analyse the vulnerability: identify the root cause of the "
-            f"{record.cwe_id} issue and explain precisely what makes this code insecure.\n"
-            f"Step 2 — Identify the repair strategy: describe the minimal, correct "
-            f"change needed to eliminate the vulnerability without breaking functionality.\n"
-            f"Step 3 — Generate the fix: produce the corrected Java code.\n\n"
-            f"Format your response EXACTLY as:\n"
-            f"ANALYSIS: <your analysis>\n"
-            f"STRATEGY: <your repair strategy>\n"
-            f"FIXED CODE:\n```java\n<corrected code only>\n```"
+            f"The following Java code contains a vulnerability of type "
+            f"{cwe_label}. "
+            f"First, explain the root cause of this vulnerability and describe "
+            f"the repair strategy. Then, provide the fixed code that addresses "
+            f"the vulnerability while preserving the intended functionality. "
+            f"Return the analysis followed by the fixed code.\n\n"
+            f"{record.code_snippet}"
         )
 
     # ------------------------------------------------------------------
     # Retrieval-Augmented Generation (RAG) (Section 3.3 of paper)
+    # Paper template (verbatim):
+    #   "The following Java code contains a vulnerability of type
+    #    {CWE-ID: CWE Name}. Below is an example of a similar
+    #    vulnerability and its fix for reference:
+    #    [Example Vulnerable Code]
+    #    [Example Fixed Code]
+    #    Now fix the following vulnerable code while preserving the
+    #    intended functionality. Return only the fixed code.
+    #    {Vulnerable Code}"
     # ------------------------------------------------------------------
 
     @staticmethod
@@ -89,29 +99,17 @@ class PromptBuilder:
             retrieved_vulnerable: str,
             retrieved_fixed: str,
             similarity_score: Optional[float] = None) -> str:
-        """
-        Enriches the prompt with a retrieved exemplar fix from CVEfixes.
-        The exemplar is the top-1 CodeBERT cosine-similarity match.
-        """
-        sim_note = (
-            f" (similarity score: {similarity_score:.4f})" if similarity_score else ""
-        )
+        cwe_label = f"{record.cwe_id}: {record.description}"
         return (
-            f"You are a security expert specialising in Java vulnerability repair.\n\n"
-            f"Below is a REFERENCE example of a similar vulnerability and its fix{sim_note}:\n\n"
-            f"[Reference Vulnerable Code]\n```java\n{retrieved_vulnerable}\n```\n\n"
-            f"[Reference Fixed Code]\n```java\n{retrieved_fixed}\n```\n\n"
-            f"---\n\n"
-            f"Now fix the following {record.cwe_id} vulnerability in the project "
-            f"'{record.project_name}'.\n\n"
-            f"Vulnerability Description:\n{record.description}\n\n"
-            f"Vulnerable File: {record.vulnerable_file}\n\n"
-            f"Code Snippet:\n```java\n{record.code_snippet}\n```\n\n"
-            f"Exact Vulnerable Line:\n```java\n{record.exact_vulnerable_line}\n```\n\n"
-            f"Task: Using the reference example as guidance, fix the {record.cwe_id} "
-            f"vulnerability above. Preserve the original functionality and return ONLY "
-            f"the corrected code snippet without any explanation, comments, or markdown "
-            f"formatting."
+            f"The following Java code contains a vulnerability of type "
+            f"{cwe_label}. "
+            f"Below is an example of a similar vulnerability and its fix "
+            f"for reference:\n\n"
+            f"[Example Vulnerable Code]\n{retrieved_vulnerable}\n\n"
+            f"[Example Fixed Code]\n{retrieved_fixed}\n\n"
+            f"Now fix the following vulnerable code while preserving the "
+            f"intended functionality. Return only the fixed code.\n\n"
+            f"{record.code_snippet}"
         )
 
     # ------------------------------------------------------------------
@@ -142,34 +140,52 @@ class PromptBuilder:
 def extract_fixed_code(llm_output: str, strategy: str) -> str:
     """
     Parse the LLM's raw output to extract the repaired code block.
-    Handles:
-      - Plain code returns (one_shot / rag)
-      - CoT structured response with 'FIXED CODE:' marker
-      - Markdown fenced blocks (```java ... ```)
+
+    For one_shot and rag: the paper instructs "Return only the fixed code",
+    so the entire output IS the code (possibly wrapped in a markdown fence).
+
+    For cot: the paper instructs "Return the analysis followed by the fixed
+    code" — no rigid markers. We extract the LAST code block in the output,
+    which is consistently where the generated fix appears after the analysis
+    prose. If no code block is present, we take everything after the last
+    paragraph break as a best-effort extraction.
     """
     if strategy == "cot":
-        # Look for 'FIXED CODE:' section
-        marker = "FIXED CODE:"
-        if marker in llm_output:
-            code_section = llm_output.split(marker, 1)[1].strip()
-        else:
-            code_section = llm_output
+        # Extract the last ```...``` block, which follows the analysis prose
+        code_section = _extract_last_code_block(llm_output)
+        if code_section:
+            return code_section
+        # Fallback: take text after the last double-newline (last paragraph)
+        parts = llm_output.strip().rsplit("\n\n", 1)
+        return parts[-1].strip()
     else:
-        code_section = llm_output
+        # one_shot / rag: full output is the fix (strip fences if present)
+        code_section = _extract_last_code_block(llm_output)
+        return code_section if code_section else llm_output.strip()
 
-    # Strip markdown fences if present
-    if "```" in code_section:
-        lines = code_section.split("\n")
-        inside = False
-        extracted = []
-        for line in lines:
-            if line.strip().startswith("```"):
-                if inside:
-                    break
-                inside = True
-                continue
+
+def _extract_last_code_block(text: str) -> str:
+    """
+    Extract the content of the last fenced code block (``` ... ```) in text.
+    Returns empty string if no fence is found.
+    """
+    if "```" not in text:
+        return ""
+    blocks = []
+    lines = text.split("\n")
+    inside = False
+    current: list[str] = []
+    for line in lines:
+        if line.strip().startswith("```"):
             if inside:
-                extracted.append(line)
-        return "\n".join(extracted).strip()
-
-    return code_section.strip()
+                blocks.append("\n".join(current).strip())
+                current = []
+                inside = False
+            else:
+                inside = True
+        elif inside:
+            current.append(line)
+    # In case the closing fence is missing
+    if inside and current:
+        blocks.append("\n".join(current).strip())
+    return blocks[-1] if blocks else ""
