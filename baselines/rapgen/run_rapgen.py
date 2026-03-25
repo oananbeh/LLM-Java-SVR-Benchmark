@@ -4,7 +4,7 @@ RAP-Gen Baseline Integration
 Wraps the RAP-Gen pipeline (Wang et al., 2023) for use in our
 comparative evaluation against the four general-purpose LLMs.
 
-Original repo : https://github.com/zimin9/RAP-Gen
+Original repo : https://github.com/wang-weishi/RAP-Gen
 Paper         : "RAP-Gen: Retrieval-Augmented Patch Generation with
                  CodeT5 for Automatic Program Repair" (Wang et al., 2023)
 
@@ -14,7 +14,7 @@ Architecture:
   - Training  : fine-tuned on Defects4J, Bears, and C/C++/Java CVE datasets
 
 Setup (run once):
-  git clone https://github.com/zimin9/RAP-Gen
+    git clone https://github.com/wang-weishi/RAP-Gen
   cd RAP-Gen && pip install -r requirements.txt
   # Download pre-built BM25 index and CodeT5 weights (see their README)
 

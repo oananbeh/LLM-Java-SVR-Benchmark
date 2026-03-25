@@ -136,8 +136,8 @@ python -c "from src.rag.retrieval import prepare_cvefixes_corpus; prepare_cvefix
 git clone https://github.com/assert-kth/repairllama
 # Set REPAIRLLAMA_ROOT in .env
 
-# RAP-Gen — https://github.com/zimin9/RAP-Gen
-git clone https://github.com/zimin9/RAP-Gen
+# RAP-Gen — https://github.com/wang-weishi/RAP-Gen
+git clone https://github.com/wang-weishi/RAP-Gen
 # Set RAPGEN_ROOT in .env
 ```
 
@@ -197,7 +197,7 @@ A fix is labelled **correct** only when both CodeQL and Snyk confirm the origina
 | Baseline | Architecture | Reference |
 |----------|-------------|-----------|
 | **RepairLLaMA** | Code Llama 7B + LoRA adapters | Silva et al. (2023) — [GitHub](https://github.com/assert-kth/repairllama) |
-| **RAP-Gen** | CodeT5 + BM25 retrieval | Wang et al. (2023) — [GitHub]([https://github.com/zimin9/RAP-Gen](https://github.com/wang-weishi/RAP-Gen)) |
+| **RAP-Gen** | CodeT5 + BM25 retrieval | Wang et al. (2023) — [GitHub](https://github.com/wang-weishi/RAP-Gen) |
 
 ---
 
