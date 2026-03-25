@@ -197,7 +197,7 @@ A fix is labelled **correct** only when both CodeQL and Snyk confirm the origina
 | Baseline | Architecture | Reference |
 |----------|-------------|-----------|
 | **RepairLLaMA** | Code Llama 7B + LoRA adapters | Silva et al. (2023) — [GitHub](https://github.com/assert-kth/repairllama) |
-| **RAP-Gen** | CodeT5 + BM25 retrieval | Wang et al. (2023) — [GitHub](https://github.com/zimin9/RAP-Gen) |
+| **RAP-Gen** | CodeT5 + BM25 retrieval | Wang et al. (2023) — [GitHub]([https://github.com/zimin9/RAP-Gen](https://github.com/wang-weishi/RAP-Gen)) |
 
 ---
 
