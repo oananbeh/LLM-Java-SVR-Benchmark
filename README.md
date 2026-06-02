@@ -206,13 +206,15 @@ A fix is labelled **correct** only when both CodeQL and Snyk confirm the origina
 If you use this repository or its datasets in your research, please cite:
 
 ```bibtex
-@article{anananbeh2025llmsvr,
-  title   = {Assessing the Effectiveness of Large Language Models for Java
-             Vulnerability Repair: A Comparative Study},
-  author  = {Anananbeh, Obieda, Wala Alnozami and Dae-Kyoo Kim},
-  journal = {},
-  year    = {2026},
-  url     = {https://github.com/oananbeh/LLM-Java-SVR-Benchmark}
+@article{ananbeh2026assessing,
+  title={Assessing the effectiveness of large language models for Java vulnerability repair: A comparative study},
+  author={Ananbeh, Obieda and Alnozami, Wala and Kim, Dae-Kyoo},
+  journal={Automated Software Engineering},
+  volume={33},
+  number={3},
+  pages={75},
+  year={2026},
+  publisher={Springer}
 }
 ```
 
